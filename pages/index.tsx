@@ -2,10 +2,11 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Card from '../components/Card';
 import Footer from '../components/Footer';
+import MainWrapper from '../components/MainWrapper';
 
 export default function Home() {
   return (
-    <div className="min-h-screen py-0 px-2 flex flex-col justify-center items-center">
+    <MainWrapper>
       <Head>
         <title>Home | Kavienan J</title>
       </Head>
@@ -19,7 +20,7 @@ export default function Home() {
 
         <p className="mt-2 text-center text-2xl leading-normal">
           Self learnt&nbsp;
-          <code className="bg-[#fafafa] rounded-md p-3 text-lg font-code">Flutter / Next.js</code> Full St(u)ck developer!
+          <code className="bg-[#fafafa] dark:bg-zinc-800 rounded-md p-3 text-lg font-code">Flutter / Next.js</code> Full St(u)ck developer!
         </p>
  
         <div className="mt-12 w-full flex-col sm:max-w-[800px] sm:flex-row flex flex-wrap justify-center">
@@ -47,6 +48,6 @@ export default function Home() {
       </main>
 
       <Footer />
-    </div>
+    </MainWrapper>
   );
 }

@@ -1,10 +1,11 @@
 import Head from 'next/head';
 import Card from '../components/Card';
 import Footer from '../components/Footer';
+import MainWrapper from '../components/MainWrapper';
 
 export default function Contact() {
   return (
-    <div className="min-h-screen py-0 px-2 flex flex-col justify-center items-center">
+    <MainWrapper>
       <Head>
         <title>Contact | Kavienan J</title>
       </Head>
@@ -16,6 +17,6 @@ export default function Contact() {
         />
       </main>
       <Footer />
-    </div>
+    </MainWrapper>
   );
 }
