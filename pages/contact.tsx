@@ -13,7 +13,7 @@ export default function Contact() {
         <Card
           next="/"
           title="Contact"
-          description="Find all the ways to ask me anything anytime!"
+          description="Social profiles, Email, Number and other links"
         />
       </main>
       <Footer />

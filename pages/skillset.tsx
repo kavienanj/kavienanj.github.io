@@ -13,7 +13,7 @@ export default function Skillset() {
         <Card
           next="/"
           title="Skillset"
-          description="Find all the skills that I have mastered."
+          description="Frameworks, Databases, Languages, and other tools"
         />
       </main>
       <Footer />
