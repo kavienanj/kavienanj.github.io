@@ -11,7 +11,7 @@ export default function Home() {
       </Head>
 
       <main className="py-20 px-0 flex flex-col justify-center items-center">
-        <h1 className="m-0 text-7xl leading-tight text-center font-semibold">
+        <h1 className="m-0 text-7xl leading-tight text-center font-medium">
           Hi, I am <a className="text-dark-blue no-underline focus:underline active:underline hover:underline">Kavienan!</a>
         </h1>
 
