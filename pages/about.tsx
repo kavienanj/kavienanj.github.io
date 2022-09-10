@@ -13,7 +13,7 @@ export default function About() {
         <Card
           next="/"
           title="Who am I?"
-          description="Find all the details you need to know about me."
+          description="Education, Achievements, Experience and Interest"
         />
       </main>
       <Footer />

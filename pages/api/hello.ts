@@ -6,8 +6,10 @@ type Data = {
   name: string
 }
 
-export default (req: NextApiRequest, res: NextApiResponse<Data>) => {
+const hello = (req: NextApiRequest, res: NextApiResponse<Data>) => {
   // Open Chrome DevTools to step through the debugger!
   // debugger;
   res.status(200).json({ name: 'Hello, world!' });
 };
+
+export default hello;

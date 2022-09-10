@@ -13,7 +13,7 @@ export default function Projects() {
         <Card
           next="/"
           title="Projects"
-          description="Find all the projects that I have created and contributed."
+          description="Websites, Mobile/Desktop Apps, Open source, etc."
         />
       </main>
       <Footer />
