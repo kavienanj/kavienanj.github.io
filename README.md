@@ -1,3 +1,4 @@
-# kavienanj
+# Portfolio Site | Kavienan J
+### Made with Next.js, Typescript and Tailwind
 
-[Edit on StackBlitz ⚡️](https://stackblitz.com/edit/kavienanj)
+[Edit with StackBlitz ⚡️](https://stackblitz.com/edit/kavienanj)
