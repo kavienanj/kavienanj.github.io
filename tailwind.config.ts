@@ -7,7 +7,15 @@ const config: Config = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        neon: '#00FFDD',
+      },
+      fontFamily: {
+        goldman: ['var(--font-goldman)'],
+        meslo: ['var(--font-meslo)'],
+      },
+    },
   },
   plugins: [],
 }

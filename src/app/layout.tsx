@@ -1,8 +1,20 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Poppins } from 'next/font/google'
+import { Goldman, Inconsolata } from 'next/font/google'
 
-const poppins = Poppins({ weight: "400", subsets: ['latin'] });
+const goldman = Goldman({
+  weight: "700",
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-goldman',
+});
+
+const meslo = Inconsolata({
+  weight: "700",
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-meslo',
+});
 
 export const metadata: Metadata = {
   title: 'Kavienan J | Full-Stack Developer',
@@ -12,7 +24,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={poppins.className}>{children}</body>
+      <body className={`${goldman.variable} ${meslo.variable}`}>
+        {children}
+      </body>
     </html>
   )
 }
