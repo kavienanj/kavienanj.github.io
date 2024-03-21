@@ -21,7 +21,7 @@ export default function Introduction() {
           </filter>
         </defs>
       </svg>
-      <svg className="absolute bottom-0 md:bottom-9 z-0" xmlns="http://www.w3.org/2000/svg" width="190" height="131" viewBox="0 0 254 171" fill="none">
+      <svg className="hidden sm:block absolute bottom-0 md:bottom-9 z-0" xmlns="http://www.w3.org/2000/svg" width="190" height="131" viewBox="0 0 254 171" fill="none">
         <g filter="url(#filter0_d_379_4)">
           <path d="M0 29H218L112.854 135" stroke="#00FFDD" strokeWidth="5"/>
         </g>
