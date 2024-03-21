@@ -1,6 +1,6 @@
 export default function Introduction() {
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-clip">
       <h1 className="absolute w-full top-[15vh] font-goldman text-white text-center font-bold opacity-80 text-4xl leading-[65%] md:text-6xl md:leading-[65%] lg:text-8xl lg:leading-[65%]">
         BUILD <span className='text-neon'>BLEEDING EDGE</span> APPLICATIONS WITH ME!
       </h1>
@@ -21,7 +21,7 @@ export default function Introduction() {
           </filter>
         </defs>
       </svg>
-      <svg  className="absolute bottom-[-2.5rem] md:bottom-9 z-0" xmlns="http://www.w3.org/2000/svg" width="254" height="171" viewBox="0 0 254 171" fill="none">
+      <svg className="absolute bottom-0 md:bottom-9 z-0" xmlns="http://www.w3.org/2000/svg" width="190" height="131" viewBox="0 0 254 171" fill="none">
         <g filter="url(#filter0_d_379_4)">
           <path d="M0 29H218L112.854 135" stroke="#00FFDD" strokeWidth="5"/>
         </g>
@@ -74,7 +74,7 @@ export default function Introduction() {
         </svg>
         <span className="pr-4">Find more</span>
       </div> */}
-      <div className='bg-neon w-full z-10 py-4 md:py-5 flex flex-row items-center justify-center font-meslo text-md md:text-lg gap-10 md:gap-14 lg:gap-28 shadow-[0px_-4px_50px_0px_rgba(0,255,221,0.40)]'>
+      <div className='bg-neon w-full z-10 py-4 md:py-5 flex flex-row items-center justify-center font-meslo text-sm md:text-lg gap-10 md:gap-14 lg:gap-28 shadow-[0px_-4px_50px_0px_rgba(0,255,221,0.40)]'>
         <span>IDEA 💡</span>
         <span>BUILD 🛠️</span>
         <span>DEPLOY 🚀</span>
