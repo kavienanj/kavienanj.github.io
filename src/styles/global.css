@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-serif: "Source Serif 4", ui-serif, Georgia, serif;
@@ -14,12 +15,24 @@
   --color-accent-hover: #14283f;
 }
 
+/* Dark theme overrides — unlayered so it wins over @theme's `theme` layer. */
+:root.dark {
+  --color-bg: #14161a;
+  --color-surface: #1b1e24;
+  --color-text: #e7e5e0;
+  --color-text-muted: #9ca0a8;
+  --color-border: #2b2f37;
+  --color-accent: #3b82f6;
+  --color-accent-hover: #60a5fa;
+}
+
 @layer base {
   html {
     font-family: var(--font-sans);
     background-color: var(--color-bg);
     color: var(--color-text);
     scroll-behavior: smooth;
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
 
   h1, h2, h3, h4 {

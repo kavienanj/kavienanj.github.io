@@ -21,7 +21,45 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script is:inline>
+      (function () {
+        const STORAGE_KEY = "theme";
+
+        function getPreference() {
+          const stored = localStorage.getItem(STORAGE_KEY);
+          return stored === "light" || stored === "dark" ? stored : "system";
+        }
+
+        function systemPrefersDark() {
+          return window.matchMedia("(prefers-color-scheme: dark)").matches;
+        }
+
+        function apply(pref) {
+          const isDark = pref === "dark" || (pref === "system" && systemPrefersDark());
+          document.documentElement.classList.toggle("dark", isDark);
+        }
+
+        function set(pref) {
+          if (pref === "system") {
+            localStorage.removeItem(STORAGE_KEY);
+          } else {
+            localStorage.setItem(STORAGE_KEY, pref);
+          }
+          apply(pref);
+          window.dispatchEvent(new CustomEvent("themechange", { detail: { pref } }));
+        }
+
+        apply(getPreference());
+
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
+          if (getPreference() === "system") apply("system");
+        });
+
+        window.__theme = { get: getPreference, set: set };
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="canonical" href={canonicalURL} />
     <link rel="sitemap" href="/sitemap-index.xml" />

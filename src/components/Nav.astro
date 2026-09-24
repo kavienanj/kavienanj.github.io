@@ -1,5 +1,6 @@
 ---
 import { site } from "../data/social";
+import ThemeToggle from "./ThemeToggle.astro";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -37,6 +38,7 @@ function isActive(href: string) {
           </a>
         ))
       }
+      <ThemeToggle />
     </nav>
 
     <button
@@ -68,6 +70,9 @@ function isActive(href: string) {
         </a>
       ))
     }
+    <div class="pt-1">
+      <ThemeToggle />
+    </div>
   </nav>
 </header>
 

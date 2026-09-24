@@ -1,0 +1,79 @@
+---
+const options = [
+  {
+    value: "light",
+    label: "Light theme",
+    svg: `<circle cx="10" cy="10" r="3.25"/><path stroke-linecap="round" d="M10 2.5v2M10 15.5v2M17.5 10h-2M4.5 10h-2M15.36 4.64l-1.41 1.41M6.05 13.95l-1.41 1.41M15.36 15.36l-1.41-1.41M6.05 6.05L4.64 4.64"/>`,
+  },
+  {
+    value: "system",
+    label: "System theme",
+    svg: `<rect x="3" y="4" width="14" height="9.5" rx="1.25"/><path stroke-linecap="round" d="M7.25 17h5.5M10 13.5V17"/>`,
+  },
+  {
+    value: "dark",
+    label: "Dark theme",
+    svg: `<path stroke-linejoin="round" d="M17.1 12.6A7.5 7.5 0 0 1 7.4 2.9a7.5 7.5 0 1 0 9.7 9.7Z"/>`,
+  },
+];
+---
+
+<div
+  class="theme-toggle inline-flex items-center gap-0.5 rounded-full border border-border p-0.5"
+  role="radiogroup"
+  aria-label="Theme"
+>
+  {
+    options.map((opt) => (
+      <button
+        type="button"
+        role="radio"
+        aria-checked="false"
+        data-theme-value={opt.value}
+        aria-label={opt.label}
+        title={opt.label}
+        class="theme-toggle-btn rounded-full p-1.5 text-text-muted transition-colors hover:text-accent"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          class="h-4 w-4"
+          set:html={opt.svg}
+        />
+      </button>
+    ))
+  }
+</div>
+
+<script>
+  function initThemeToggle(root: HTMLElement) {
+    const buttons = root.querySelectorAll<HTMLButtonElement>(".theme-toggle-btn");
+
+    function syncActive() {
+      const current = window.__theme.get();
+      buttons.forEach((btn) => {
+        const isActive = btn.dataset.themeValue === current;
+        btn.setAttribute("aria-checked", String(isActive));
+        btn.classList.toggle("bg-surface", isActive);
+        btn.classList.toggle("text-accent", isActive);
+        btn.classList.toggle("text-text-muted", !isActive);
+      });
+    }
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const value = btn.dataset.themeValue as "light" | "dark" | "system";
+        window.__theme.set(value);
+        syncActive();
+      });
+    });
+
+    window.addEventListener("themechange", syncActive);
+    syncActive();
+  }
+
+  document.querySelectorAll<HTMLElement>(".theme-toggle").forEach(initThemeToggle);
+</script>
