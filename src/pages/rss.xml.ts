@@ -6,7 +6,7 @@ import { site } from "../data/social";
 export async function GET(context: APIContext) {
   const posts = await getCollection("blog", ({ data }) => !data.draft);
   return rss({
-    title: `${site.name} — Blog`,
+    title: `${site.name}'s Blog`,
     description: "Notes on AI security research, cybersecurity, and things I'm learning.",
     site: context.site!,
     items: posts

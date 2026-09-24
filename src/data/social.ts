@@ -15,4 +15,5 @@ export const socialLinks = [
     href: "https://www.upwork.com/freelancers/~01c54f90bd0c543351?s=1110580755107926016",
     icon: "upwork",
   },
+  { name: "RSS Feed", href: "/rss.xml", icon: "rss" },
 ];

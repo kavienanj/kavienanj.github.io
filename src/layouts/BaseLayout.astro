@@ -1,6 +1,7 @@
 ---
 import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
+import { site } from "../data/social";
 import "../styles/global.css";
 
 interface Props {
@@ -10,7 +11,7 @@ interface Props {
 
 const {
   title,
-  description = "Kavienan Jegatheesan — Cybersecurity researcher focused on Trustworthy & Reliable AI, AI Red Teaming, and Software Supply Chain Security.",
+  description = "Kavienan Jegatheesan, a cybersecurity researcher focused on Trustworthy & Reliable AI, AI Red Teaming, and Software Supply Chain Security.",
 } = Astro.props;
 
 const pageTitle = title === "Kavienan Jegatheesan" ? title : `${title} · Kavienan Jegatheesan`;
@@ -63,6 +64,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="canonical" href={canonicalURL} />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${site.name}'s Blog`} href="/rss.xml" />
     <meta name="generator" content={Astro.generator} />
 
     <title>{pageTitle}</title>

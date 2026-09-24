@@ -7,4 +7,4 @@ role: "Co-Author"
 order: 4
 ---
 
-Builds a true tool-calling agent using a graph-based orchestration framework, with a single asynchronous event queue and consumer process serializing execution across infected hosts instead of unsynchronized multithreading. Benchmarks attack speed, strength, and cost across small to large models, with and without auxiliary skills and human-in-the-loop guidance, to profile how model scale and oversight shape autonomous exploitation capability.
+Studies autonomous cyber operation in a controlled, research-only environment through a lab-based command-and-control architecture, where a lightweight local agent runs on compromised hosts and a centralized controller coordinates reconnaissance, credential discovery, lateral movement, and multi-host propagation. Contributes a compact, reproducible testbed for examining how LLM-driven agents reason, persist, and coordinate across a segmented network, with an emphasis on traceability, observability, and safety in AI-assisted security research.

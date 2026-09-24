@@ -1,6 +1,6 @@
 ---
 title: "Code Scanner AI"
-description: "Multi-agent AI security analysis tool: a three-agent pipeline that discovers API endpoints, generates OWASP-mapped security checklists, and inspects code for vulnerabilities like SQL injection, XSS, and command injection."
+description: "A multi-agent AI security analysis tool built as a three-agent pipeline that discovers API endpoints, generates OWASP-mapped security checklists, and inspects code for vulnerabilities like SQL injection, XSS, and command injection."
 tech: ["Next.js", "TypeScript", "React", "Tailwind CSS", "OpenAI API", "Anthropic API", "Docker"]
 github: "https://github.com/kavienanj/code-scanner-ai"
 year: "2026"

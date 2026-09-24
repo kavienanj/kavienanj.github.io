@@ -18,7 +18,7 @@ const formatter = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "lo
 
     {
       posts.length === 0 ? (
-        <p class="mt-16 text-text-muted italic">No posts yet — coming soon.</p>
+        <p class="mt-16 text-text-muted italic">No posts yet. Coming soon.</p>
       ) : (
         <ul class="mt-10 divide-y divide-border">
           {posts.map((post) => (
