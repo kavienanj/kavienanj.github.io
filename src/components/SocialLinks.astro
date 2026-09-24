@@ -1,0 +1,39 @@
+---
+import { socialLinks } from "../data/social";
+
+interface Props {
+  class?: string;
+  iconClass?: string;
+}
+
+const { class: className = "", iconClass = "h-5 w-5" } = Astro.props;
+
+// Inlined (not <img>) so the SVGs' fill="currentColor" picks up hover/theme color.
+// Bundled via Vite's raw-import glob so it works regardless of chunk output location.
+const rawIcons = import.meta.glob("../icons/*.svg", {
+  eager: true,
+  query: "?raw",
+  import: "default",
+}) as Record<string, string>;
+
+function iconSvg(name: string) {
+  const entry = Object.entries(rawIcons).find(([path]) => path.endsWith(`/${name}.svg`));
+  // Strip the hardcoded width/height so Tailwind sizing on the wrapper controls the rendered size.
+  return entry?.[1].replace(/\s(width|height)="[^"]*"/g, "") ?? "";
+}
+---
+
+<div class={`flex items-center gap-4 ${className}`}>
+  {
+    socialLinks.map((link) => (
+      <a
+        href={link.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={link.name}
+        class={`text-text-muted hover:text-accent transition-colors [&>svg]:h-full [&>svg]:w-full ${iconClass}`}
+        set:html={iconSvg(link.icon)}
+      />
+    ))
+  }
+</div>

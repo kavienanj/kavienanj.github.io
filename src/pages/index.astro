@@ -1,0 +1,55 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SocialLinks from "../components/SocialLinks.astro";
+import PublicationCard from "../components/PublicationCard.astro";
+import { news } from "../data/news";
+import { site } from "../data/social";
+
+const publications = (await getCollection("publications"))
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 2);
+---
+
+<BaseLayout title={site.name}>
+  <section class="mx-auto max-w-4xl px-6 pt-16 pb-12">
+    <p class="text-sm uppercase tracking-widest text-text-muted mb-3">{site.role}</p>
+    <h1 class="font-serif text-4xl sm:text-5xl font-bold leading-tight">
+      {site.name}
+    </h1>
+    <p class="text-text-muted mt-2">{site.affiliation}</p>
+
+    <p class="mt-6 text-base leading-relaxed max-w-2xl">
+      Final-year Computer Science and Engineering undergraduate at the University of Moratuwa,
+      specializing in Cybersecurity. My research centers on <strong>Trustworthy &amp; Reliable AI</strong>,
+      the <strong>emerging threats of agentic systems</strong> (AI red teaming), and
+      <strong> software supply chain security</strong> — with a broader interest in AI for security more generally.
+    </p>
+
+    <SocialLinks class="mt-6" />
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 py-10 border-t border-border">
+    <h2 class="font-serif text-2xl font-semibold mb-6">News</h2>
+    <ul class="space-y-4">
+      {
+        news.map((item) => (
+          <li class="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4">
+            <span class="text-sm text-text-muted shrink-0 sm:w-24">{item.date}</span>
+            <span class="text-sm leading-relaxed">{item.text}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 py-10 border-t border-border">
+    <div class="flex items-baseline justify-between mb-2">
+      <h2 class="font-serif text-2xl font-semibold">Selected Publications</h2>
+      <a href="/publications" class="text-sm">View all →</a>
+    </div>
+    <div>
+      {publications.map((publication) => <PublicationCard publication={publication} />)}
+    </div>
+  </section>
+</BaseLayout>

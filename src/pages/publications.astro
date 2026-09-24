@@ -1,0 +1,36 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PublicationCard from "../components/PublicationCard.astro";
+
+const all = (await getCollection("publications")).sort((a, b) => a.data.order - b.data.order);
+const submitted = all.filter((p) => p.data.status === "submitted" || p.data.status === "published");
+const inPrep = all.filter((p) => p.data.status === "in-prep");
+---
+
+<BaseLayout title="Publications" description="Publications and manuscripts by Kavienan Jegatheesan on AI security, agentic systems, and software supply chain security.">
+  <section class="mx-auto max-w-4xl px-6 pt-16 pb-12">
+    <h1 class="font-serif text-3xl sm:text-4xl font-bold">Publications</h1>
+    <p class="mt-4 text-text-muted max-w-2xl leading-relaxed">
+      Co-authored work in progress across AI security, agentic systems, and software supply chain security.
+    </p>
+
+    {
+      submitted.length > 0 && (
+        <div class="mt-10">
+          <h2 class="font-serif text-xl font-semibold mb-2">Under Review</h2>
+          <div>{submitted.map((publication) => <PublicationCard publication={publication} />)}</div>
+        </div>
+      )
+    }
+
+    {
+      inPrep.length > 0 && (
+        <div class="mt-10">
+          <h2 class="font-serif text-xl font-semibold mb-2">Manuscripts in Preparation</h2>
+          <div>{inPrep.map((publication) => <PublicationCard publication={publication} />)}</div>
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

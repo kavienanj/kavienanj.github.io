@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# kavienanj.github.io
 
-## Getting Started
+Personal academic/research portfolio site for Kavienan Jegatheesan, built with [Astro](https://astro.build) and deployed to GitHub Pages.
 
-First, run the development server:
+## Structure
+
+- `src/pages/` — routes (Home, Research, Publications, Projects, CV, Blog)
+- `src/content/` — content collections: `publications/`, `projects/`, `blog/`
+- `src/data/` — hand-curated structured data (`news.ts`, `social.ts`, `cv.ts`)
+- `src/components/`, `src/layouts/` — UI
+- `latex/` — the source-of-truth LaTeX CVs (`cv_professional.tex`, `cv_research.tex`). **Not edited by the website build** — update the site's content by hand in `src/content/` and `src/data/cv.ts` when the CVs change.
+- `public/cv/` — compiled CV PDFs (`professional-cv.pdf`, `research-cv.pdf`) linked from the `/cv` page. Recompile from `latex/` (e.g. `latexmk -xelatex cv_research.tex`) and drop the output here when the CVs are updated.
+
+## Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev       # http://localhost:4321
+npm run build      # outputs to dist/
+npm run preview
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Adding a blog post
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Drop a new `.md` or `.mdx` file into `src/content/blog/` with frontmatter matching the schema in `src/content.config.ts` (`title`, `date`, `description`, `tags`, `draft`). It will appear automatically on `/blog`.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Deployment
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Pushing to `main` triggers `.github/workflows/pages.yml`, which builds the site with the official [Astro GitHub Pages action](https://github.com/withastro/action) and publishes it via GitHub Pages (Settings → Pages → Source: GitHub Actions).
