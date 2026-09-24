@@ -7,7 +7,7 @@ export async function GET(context: APIContext) {
   const posts = await getCollection("blog", ({ data }) => !data.draft);
   return rss({
     title: `${site.name}'s Blog`,
-    description: "Notes on AI security research, cybersecurity, and things I'm learning.",
+    description: "Sharing my experiences and learnings.",
     site: context.site!,
     items: posts
       .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())

@@ -8,8 +8,7 @@ Personal academic/research portfolio site for Kavienan Jegatheesan, built with [
 - `src/content/` — content collections: `publications/`, `projects/`, `blog/`
 - `src/data/` — hand-curated structured data (`news.ts`, `social.ts`, `cv.ts`)
 - `src/components/`, `src/layouts/` — UI
-- `latex/` — the source-of-truth LaTeX CVs (`cv_professional.tex`, `cv_research.tex`). **Not edited by the website build** — update the site's content by hand in `src/content/` and `src/data/cv.ts` when the CVs change.
-- `public/cv/` — compiled CV PDFs (`professional-cv.pdf`, `research-cv.pdf`) linked from the `/cv` page. Recompile from `latex/` (e.g. `latexmk -xelatex cv_research.tex`) and drop the output here when the CVs are updated.
+- `public/cv/` — CV PDFs (`professional-cv.pdf`, `research-cv.pdf`) linked from the `/cv` page. Update `src/data/cv.ts` by hand and replace these PDFs when the CVs change.
 
 ## Development
 

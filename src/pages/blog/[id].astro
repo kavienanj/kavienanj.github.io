@@ -1,6 +1,8 @@
 ---
 import { getCollection, render } from "astro:content";
+import { getImage, Image } from "astro:assets";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { site } from "../../data/social";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog", ({ data }) => !data.draft);
@@ -13,9 +15,30 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await render(post);
 const formatter = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", day: "numeric" });
+
+const ogImage = post.data.cover ? await getImage({ src: post.data.cover, width: 1200 }) : undefined;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.date.toISOString(),
+  author: { "@type": "Person", name: site.name },
+  keywords: post.data.tags.join(", "),
+  ...(ogImage && { image: new URL(ogImage.src, Astro.site).toString() }),
+};
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description}>
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  image={ogImage?.src}
+  article
+  publishedDate={post.data.date}
+  tags={post.data.tags}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   <article class="mx-auto max-w-3xl px-6 pt-16 pb-20">
     <a href="/blog" class="text-sm text-text-muted hover:text-accent">&larr; Back to Blog</a>
     <h1 class="font-serif text-3xl sm:text-4xl font-bold mt-4">{post.data.title}</h1>
@@ -29,7 +52,17 @@ const formatter = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "lo
         </div>
       )
     }
-    <div class="prose prose-neutral max-w-none mt-8 prose-headings:font-serif prose-a:text-accent">
+    {
+      post.data.cover && (
+        <Image
+          src={post.data.cover}
+          alt={post.data.title}
+          width={1200}
+          class="w-full rounded-lg border border-border mt-6 object-cover"
+        />
+      )
+    }
+    <div class="prose max-w-none mt-8 prose-headings:font-serif">
       <Content />
     </div>
   </article>

@@ -3,14 +3,14 @@ export type NewsItem = {
   text: string;
 };
 
-// Curated by hand from the CVs in latex/ — update here when something new happens.
+// Curated by hand — update here when something new happens.
 export const news: NewsItem[] = [
   {
-    date: "2026",
+    date: "Aug 2026",
     text: "Paper on identity-revocation freshness in ERC-8004 agent identity systems submitted to AISC 2027.",
   },
   {
-    date: "2026",
+    date: "Aug 2026",
     text: "Paper on tool-feedback corruption in mathematical reasoning agents submitted to the NeurIPS 2026 Math-AI Workshop.",
   },
   {

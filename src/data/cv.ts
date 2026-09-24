@@ -1,5 +1,4 @@
-// Manually curated from latex/cv_professional.tex and latex/cv_research.tex (read-only source of truth).
-// Update this file by hand when the .tex CVs change — it is not generated automatically.
+// Update this file by hand when your CV changes; keep public/cv/*.pdf in sync separately.
 
 export const education = [
   {
@@ -24,16 +23,18 @@ export const education = [
 export const experience = [
   {
     role: "Teaching Assistant",
-    org: "CS2033, Data Communication and Networking Lab, University of Moratuwa",
+    org: "University of Moratuwa",
+    url: "https://uom.lk",
     type: "Part-time, On-site",
     period: "Aug 2026 – Present",
     bullets: [
-      "Teach undergraduates core networking concepts, including IP addressing, TCP/IP, and the OSI layer stack, and conduct hands-on lab practicals using real Cisco switches and routers.",
+      "Conduct lab sessions for CS2033 (Data Communication and Networking), teaching undergraduates core networking concepts including IP addressing, TCP/IP, and the OSI layer stack, with hands-on practicals using real Cisco switches and routers.",
     ],
   },
   {
     role: "Cybersecurity Engineer Intern",
     org: "WSO2 Lanka Pvt Limited",
+    url: "https://wso2.com",
     type: "Full-time, On-site",
     period: "Nov 2025 – May 2026",
     bullets: [
@@ -44,6 +45,7 @@ export const experience = [
   {
     role: "Full-Stack Developer",
     org: "Simology Limited, United Kingdom",
+    url: "https://simology.io/",
     type: "Part-time, Remote",
     period: "June 2024 – May 2025",
     bullets: [
@@ -54,6 +56,7 @@ export const experience = [
   {
     role: "Flutter Developer",
     org: "Operate Holdings Limited, Saudi Arabia",
+    url: "https://operate-solution.com/",
     type: "Part-time, Remote",
     period: "Mar 2024 – July 2025",
     bullets: [
@@ -91,5 +94,3 @@ export const volunteering = [
   { role: "Volunteer", org: "Cyber Rush 2025 — CodeJam 2025 Capture the Flag Competition (CSE40)", period: "Mar – May 2025", note: "Designed original cryptography and web-vulnerability challenges." },
   { role: "Volunteer Resource Person", org: "Future Minds 2025 — CodeJam 2025 (CSE40)", period: "Mar – May 2025", note: "Delivered a session on Introduction to Network Security & Cryptography for school students." },
 ];
-
-export const languages = "English (Professional working proficiency), Tamil (Native), Sinhala (Professional working proficiency)";

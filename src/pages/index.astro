@@ -4,16 +4,25 @@ import { Image } from "astro:assets";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SocialLinks from "../components/SocialLinks.astro";
 import PublicationCard from "../components/PublicationCard.astro";
+import ProjectCard from "../components/ProjectCard.astro";
 import { news } from "../data/news";
 import { site } from "../data/social";
-import profilePhoto from "../assets/kavienanj.jpeg";
+import { education, experience, skills, awards, leadership, volunteering } from "../data/cv";
+import profilePhoto from "../assets/kavienanj.png";
 
 const publications = (await getCollection("publications"))
   .sort((a, b) => a.data.order - b.data.order)
   .slice(0, 2);
+
+const projects = (await getCollection("projects"))
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 2);
 ---
 
-<BaseLayout title={site.name}>
+<BaseLayout
+  title={site.name}
+  description="Kavienan Jegatheesan, a cybersecurity researcher and full-stack developer focused on Secure Software Development, Trustworthy AI, and emerging threats in agentic systems."
+>
   <section class="mx-auto max-w-4xl px-6 pt-16 pb-12">
     <div class="flex flex-col sm:flex-row sm:items-start gap-6">
       <Image
@@ -33,9 +42,10 @@ const publications = (await getCollection("publications"))
 
         <p class="mt-6 text-base leading-relaxed max-w-2xl">
           Final-year Computer Science and Engineering undergraduate at the University of Moratuwa,
-          specializing in Cybersecurity. My research centers on <strong>Trustworthy &amp; Reliable AI</strong>,
-          the <strong>emerging threats of agentic systems</strong> (AI red teaming), and
-          <strong> software supply chain security</strong>. I also hold a broader interest in AI for security more generally.
+          specializing in Cybersecurity. My interests are <strong>Secure Software Development</strong>,
+          <strong> Trustworthy AI</strong>, and <strong>emerging threats in agentic systems</strong>.
+          I also enjoy exploring security vulnerabilities across open source software. I'm a
+          <strong> Top-Rated Freelance Full-Stack Developer</strong> on Upwork.
         </p>
 
         <SocialLinks class="mt-6" />
@@ -44,7 +54,7 @@ const publications = (await getCollection("publications"))
   </section>
 
   <section class="mx-auto max-w-4xl px-6 py-10 border-t border-border">
-    <h2 class="font-serif text-2xl font-semibold mb-6">News</h2>
+    <h2 class="font-serif text-2xl font-semibold mb-6">Updates</h2>
     <ul class="space-y-4">
       {
         news.map((item) => (
@@ -58,12 +68,139 @@ const publications = (await getCollection("publications"))
   </section>
 
   <section class="mx-auto max-w-4xl px-6 py-10 border-t border-border">
+    <h2 class="font-serif text-2xl font-semibold mb-6">Experience</h2>
+    <div class="space-y-6">
+      {
+        experience.map((item) => (
+          <div>
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 class="font-medium">
+                {item.role} <span class="text-text-muted font-normal">— {item.org}</span>
+                {item.url && (
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${item.org} website`}
+                    class="inline-block align-middle ml-1 text-text-muted hover:text-accent transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" class="h-3.5 w-3.5 inline">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 4H4v12h12v-4M11 3h6v6M9 11l8-8" />
+                    </svg>
+                  </a>
+                )}
+              </h3>
+              <span class="text-sm text-text-muted">{item.period}</span>
+            </div>
+            <p class="text-sm text-text-muted italic">{item.type}</p>
+            <ul class="text-sm mt-1 list-disc list-inside text-text-muted space-y-0.5">
+              {item.bullets.map((b) => <li>{b}</li>)}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 py-10 border-t border-border">
     <div class="flex items-baseline justify-between mb-2">
-      <h2 class="font-serif text-2xl font-semibold">Selected Publications</h2>
+      <h2 class="font-serif text-2xl font-semibold">Publications</h2>
       <a href="/publications" class="text-sm">View all →</a>
     </div>
     <div>
       {publications.map((publication) => <PublicationCard publication={publication} />)}
     </div>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 py-10 border-t border-border">
+    <div class="flex items-baseline justify-between mb-6">
+      <h2 class="font-serif text-2xl font-semibold">Projects</h2>
+      <a href="/projects" class="text-sm">View all →</a>
+    </div>
+    <div class="grid gap-6 sm:grid-cols-2">
+      {projects.map((project) => <ProjectCard project={project} />)}
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 py-10 border-t border-border">
+    <h2 class="font-serif text-2xl font-semibold mb-6">Education</h2>
+    <div class="space-y-6">
+      {
+        education.map((item) => (
+          <div>
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 class="font-medium">{item.school} <span class="text-text-muted font-normal">— {item.location}</span></h3>
+              <span class="text-sm text-text-muted">{item.period}</span>
+            </div>
+            <p class="text-sm text-text-muted italic">{item.degree}</p>
+            <ul class="text-sm mt-1 list-disc list-inside text-text-muted">
+              {item.details.map((d) => <li>{d}</li>)}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 py-10 border-t border-border">
+    <h2 class="font-serif text-2xl font-semibold mb-6">Skills</h2>
+    <div class="space-y-2">
+      {
+        skills.map((group) => (
+          <p class="text-sm">
+            <span class="font-medium">{group.label}: </span>
+            <span class="text-text-muted">{group.items.join(", ")}</span>
+          </p>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 py-10 border-t border-border">
+    <h2 class="font-serif text-2xl font-semibold mb-6">Awards & Honors</h2>
+    <ul class="space-y-2">
+      {
+        awards.map((a) => (
+          <li class="flex flex-wrap items-baseline justify-between gap-2 text-sm">
+            <span>
+              <span class="font-medium">{a.title}</span>
+              {a.note && <span class="text-text-muted"> — {a.note}</span>}
+            </span>
+            <span class="text-text-muted">{a.period}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 py-10 border-t border-border">
+    <h2 class="font-serif text-2xl font-semibold mb-6">Leadership</h2>
+    <ul class="space-y-2">
+      {
+        leadership.map((l) => (
+          <li class="flex flex-wrap items-baseline justify-between gap-2 text-sm">
+            <span><span class="font-medium">{l.role}</span> <span class="text-text-muted">— {l.org}</span></span>
+            <span class="text-text-muted">{l.period}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 py-10 border-t border-border">
+    <h2 class="font-serif text-2xl font-semibold mb-6">Volunteering</h2>
+    <ul class="space-y-3">
+      {
+        volunteering.map((v) => (
+          <li class="text-sm">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <span><span class="font-medium">{v.role}</span> <span class="text-text-muted">— {v.org}</span></span>
+              <span class="text-text-muted">{v.period}</span>
+            </div>
+            <p class="text-text-muted">{v.note}</p>
+          </li>
+        ))
+      }
+    </ul>
   </section>
 </BaseLayout>
