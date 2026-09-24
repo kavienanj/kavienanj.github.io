@@ -34,11 +34,11 @@
     scroll-behavior: smooth;
     scroll-padding-top: 5rem;
     transition: background-color 0.15s ease, color 0.15s ease;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   body {
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   h1, h2, h3, h4 {
