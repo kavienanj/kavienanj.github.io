@@ -1,7 +1,9 @@
 ---
+import { getImage } from "astro:assets";
 import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
-import { site } from "../data/social";
+import { site, socialLinks } from "../data/social";
+import avatar from "../assets/avatar.png";
 import "../styles/global.css";
 
 interface Props {
@@ -24,7 +26,25 @@ const {
 
 const pageTitle = title === "Kavienan Jegatheesan" ? title : `${title} · Kavienan Jegatheesan`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const imageURL = image ? new URL(image, Astro.site) : undefined;
+
+const defaultImage = await getImage({ src: avatar, width: 1200 });
+const imageURL = new URL(image ?? defaultImage.src, Astro.site);
+
+const personSameAs = socialLinks
+  .filter((link) => !link.href.startsWith("mailto:") && link.name !== "RSS Feed")
+  .map((link) => link.href);
+
+const personJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: site.name,
+  url: Astro.site?.toString(),
+  jobTitle: site.role,
+  affiliation: { "@type": "CollegeOrUniversity", name: site.affiliation },
+  address: { "@type": "Place", name: site.location },
+  email: site.email,
+  sameAs: personSameAs,
+};
 ---
 
 <!doctype html>
@@ -82,18 +102,23 @@ const imageURL = image ? new URL(image, Astro.site) : undefined;
     {tags && tags.length > 0 && <meta name="keywords" content={tags.join(", ")} />}
 
     <meta property="og:type" content={article ? "article" : "website"} />
+    <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />
-    {imageURL && <meta property="og:image" content={imageURL} />}
+    <meta property="og:image" content={imageURL} />
     {article && publishedDate && <meta property="article:published_time" content={publishedDate.toISOString()} />}
     {article && <meta property="article:author" content={site.name} />}
     {article && tags?.map((tag) => <meta property="article:tag" content={tag} />)}
 
-    <meta name="twitter:card" content={imageURL ? "summary_large_image" : "summary"} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@kavienanj" />
+    <meta name="twitter:creator" content="@kavienanj" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
-    {imageURL && <meta name="twitter:image" content={imageURL} />}
+    <meta name="twitter:image" content={imageURL} />
+
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(personJsonLd)} />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -101,6 +126,8 @@ const imageURL = image ? new URL(image, Astro.site) : undefined;
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap"
       rel="stylesheet"
     />
+
+    <script is:inline data-goatcounter="https://kavienanj.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
   </head>
   <body class="min-h-screen flex flex-col bg-bg text-text font-sans antialiased">
     <Nav />
