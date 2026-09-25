@@ -27,6 +27,9 @@ const {
 const pageTitle = title === "Kavienan Jegatheesan" ? title : `${title} · Kavienan Jegatheesan`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
+// Bump this whenever favicon/icon assets are replaced to bust browsers' persistent favicon cache.
+const ICON_VERSION = "2";
+
 const defaultImage = await getImage({ src: avatar, width: 1200 });
 const imageURL = new URL(image ?? defaultImage.src, Astro.site);
 
@@ -90,10 +93,10 @@ const personJsonLd = {
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
-    <link rel="icon" href="/favicon.ico" sizes="48x48" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="icon" href={`/favicon.ico?v=${ICON_VERSION}`} sizes="48x48" />
+    <link rel="icon" href={`/favicon.svg?v=${ICON_VERSION}`} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={`/apple-touch-icon.png?v=${ICON_VERSION}`} />
+    <link rel="manifest" href={`/site.webmanifest?v=${ICON_VERSION}`} />
     <meta name="theme-color" content="#0b0f17" />
     <link rel="canonical" href={canonicalURL} />
     <link rel="sitemap" href="/sitemap-index.xml" />
