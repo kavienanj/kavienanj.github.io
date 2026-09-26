@@ -28,7 +28,7 @@ const pageTitle = title === "Kavienan Jegatheesan" ? title : `${title} · Kavien
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 // Bump this whenever favicon/icon assets are replaced to bust browsers' persistent favicon cache.
-const ICON_VERSION = "3";
+const ICON_VERSION = "4";
 
 const defaultImage = await getImage({ src: avatar, width: 1200 });
 const imageURL = new URL(image ?? defaultImage.src, Astro.site);
