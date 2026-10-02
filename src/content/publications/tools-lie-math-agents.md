@@ -3,7 +3,7 @@ title: "When Tools Lie: Reliability of Mathematical Agents Under Corrupted Tool 
 authors: "Kavienan Jegatheesan (Co-Author)"
 venue: "6th Workshop on Mathematical Reasoning and AI, NeurIPS 2026"
 year: 2026
-status: "submitted"
+status: "published"
 role: "Co-Author"
 order: 2
 ---
