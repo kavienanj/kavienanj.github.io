@@ -15,14 +15,6 @@ export const news: NewsItem[] = [
   },
   {
     date: "Aug 2026",
-    text: "Paper on identity-revocation freshness in ERC-8004 agent identity systems submitted to AISC 2027.",
-  },
-  {
-    date: "Aug 2026",
-    text: "Paper on tool-feedback corruption in mathematical reasoning agents submitted to the NeurIPS 2026 Math-AI Workshop.",
-  },
-  {
-    date: "Aug 2026",
     text: "Started as a Teaching Assistant for the Data Communication and Networking Lab at the University of Moratuwa.",
   },
   {
