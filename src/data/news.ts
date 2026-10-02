@@ -7,6 +7,10 @@ export type NewsItem = {
 export const news: NewsItem[] = [
   {
     date: "Oct 2026",
+    text: "Paper on random sampling for learned index fitting submitted to the ERU Research Symposium 2026.",
+  },
+  {
+    date: "Oct 2026",
     text: "Paper on tool-feedback corruption in mathematical reasoning agents accepted at the NeurIPS 2026 Math-AI Workshop.",
   },
   {
