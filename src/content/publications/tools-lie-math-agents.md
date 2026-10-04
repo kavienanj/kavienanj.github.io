@@ -6,6 +6,8 @@ year: 2026
 status: "published"
 role: "Co-Author"
 order: 2
+links:
+  pdf: "https://openreview.net/forum?id=vZvNvb2L7u"
 ---
 
 Builds a hidden interceptor that silently corrupts tool output shown to a math agent while preserving the genuine result, then compares policies using no verification, mandatory reflection, or optional independent verification. Finds that mandatory reflection recovers most of the accuracy lost to corruption, while optional verification is used inconsistently. This shows that checking frequency drives robustness more than which verifier is used.
