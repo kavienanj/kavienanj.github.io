@@ -1,7 +1,7 @@
 ---
 title: "Random Sampling for Linear Learned Index Fitting"
 authors: "Kavienan Jegatheesan (Co-Author)"
-venue: "ERU Research Symposium 2026, University of Moratuwa Research Week (in collaboration with SLAAS)"
+venue: "ERU Research Symposium 2026, University of Moratuwa"
 year: 2026
 status: "submitted"
 role: "Co-Author"
