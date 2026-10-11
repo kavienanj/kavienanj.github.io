@@ -8,6 +8,11 @@ export const site = {
 
 export const socialLinks = [
   { name: "Email", href: `mailto:${site.email}`, icon: "email" },
+  {
+    name: "Google Scholar",
+    href: "https://scholar.google.com/citations?user=azEeTu0AAAAJ&hl=en&oi=ao",
+    icon: "scholar",
+  },
   { name: "GitHub", href: "https://github.com/kavienanj", icon: "github" },
   { name: "X", href: "https://x.com/kavienanj", icon: "x" },
   { name: "LinkedIn", href: "https://www.linkedin.com/in/kavienanj/", icon: "linkedin" },
