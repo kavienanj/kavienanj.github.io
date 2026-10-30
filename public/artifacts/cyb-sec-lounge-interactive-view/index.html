@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>html,body{margin:0} body{font:14px system-ui,sans-serif} [hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Huawei Lab Lounge 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap">
+<style>
+/* Layout: full-bleed 3D canvas, one floating control panel (top-left) and a camera read-out bar (bottom). */
+:root {
+  --red: #E10600;
+  --ink: #111111;
+  --paper: #FFFFFF;
+  --muted: #6B6B6B;
+  --line: #E2E2E2;
+  --panel: rgba(255,255,255,0.94);
+  --chip: #F3F3F3;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ink: #F2F2F2; --paper: #161616; --muted: #A3A3A3; --line: #333333;
+  --panel: rgba(22,22,22,0.92); --chip: #242424; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --ink: #F2F2F2; --paper: #161616; --muted: #A3A3A3; --line: #333333;
+  --panel: rgba(22,22,22,0.92); --chip: #242424; color-scheme: dark }
+
+html, body { height: 100%; }
+body { background: var(--paper); color: var(--ink); font-family: var(--sans); overflow: hidden; }
+#stage { position: fixed; inset: 0; }
+#stage canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
+
+.panel {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: calc(max(16px, env(safe-area-inset-left, 0px)));
+  width: min(300px, calc(100vw - 32px));
+  max-height: calc(100% - 90px);
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--red);
+  backdrop-filter: blur(6px);
+  font-size: 13px;
+}
+.panel summary {
+  list-style: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 12px 14px 10px;
+}
+.panel summary::-webkit-details-marker { display: none; }
+.panel h1 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+.panel .sub { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+.caret { font-size: 11px; color: var(--muted); transition: transform .15s; }
+details[open] .caret { transform: rotate(180deg); }
+.body { padding: 0 14px 14px; display: grid; gap: 14px; }
+.label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--ink); }
+.seg button { border: 0; background: transparent; color: var(--ink); padding: 8px 0; font: 600 12.5px var(--sans); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+.views { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.views button {
+  text-align: left; border: 1px solid var(--line); background: var(--chip); color: var(--ink);
+  padding: 7px 8px; font: 500 12px var(--sans); cursor: pointer;
+}
+.views button:hover { border-color: var(--ink); }
+.views button.on { border-color: var(--red); box-shadow: inset 3px 0 0 var(--red); }
+
+.toggles { display: grid; gap: 6px; }
+.toggles label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.toggles input { accent-color: var(--red); width: 15px; height: 15px; margin: 0; }
+
+.help { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0; }
+.help b { color: var(--ink); font-weight: 600; }
+
+button:focus-visible, summary:focus-visible, input:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+.readout {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  padding-block: 8px calc(8px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--panel); border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+.readout code { font-family: var(--mono); font-size: 11.5px; font-variant-numeric: tabular-nums; min-width: 0; overflow-wrap: anywhere; }
+.readout .tag { font-weight: 700; color: var(--red); letter-spacing: 0.06em; font-size: 10.5px; text-transform: uppercase; }
+.readout button { margin-left: auto; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); padding: 5px 10px; font: 600 12px var(--sans); cursor: pointer; }
+
+.pad { position: fixed; right: calc(max(16px, env(safe-area-inset-right, 0px))); bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  display: grid; grid-template-columns: repeat(3, 44px); grid-template-rows: repeat(2, 44px); gap: 4px; }
+.pad button { background: var(--panel); border: 1px solid var(--line); color: var(--ink); font: 600 16px var(--sans); cursor: pointer; touch-action: none; user-select: none; }
+.pad button:active { background: var(--red); color: #fff; }
+.pad .up { grid-column: 2; grid-row: 1; } .pad .left { grid-column: 1; grid-row: 2; }
+.pad .down { grid-column: 2; grid-row: 2; } .pad .right { grid-column: 3; grid-row: 2; }
+
+[hidden] { display: none !important; }
+#err { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .caret { transition: none; } }
+</style>
+
+<div id="stage"></div>
+<div id="err" hidden>The 3D view needs WebGL, which this browser has turned off. Try another browser or enable hardware acceleration.</div>
+
+<details class="panel" id="panel" open>
+  <summary>
+    <div>
+      <h1>Student Lounge · 3D</h1>
+      <div class="sub">Huawei Lab · 5.80 m × 11.30 m · 2.70 m ceiling</div>
+    </div>
+    <span class="caret" aria-hidden="true">▼</span>
+  </summary>
+  <div class="body">
+    <div>
+      <div class="label">Mode</div>
+      <div class="seg" role="group" aria-label="Navigation mode">
+        <button id="mOrbit" aria-pressed="true">Orbit</button>
+        <button id="mWalk" aria-pressed="false">Walk</button>
+      </div>
+    </div>
+    <div>
+      <div class="label">Views</div>
+      <div class="views" id="views"></div>
+    </div>
+    <div>
+      <div class="label">Show</div>
+      <div class="toggles">
+        <label><input type="checkbox" id="tWalk"> Walkway on floor</label>
+        <label><input type="checkbox" id="tCeil" checked> Ceiling when inside</label>
+        <label><input type="checkbox" id="tShadow" checked> Shadows</label>
+      </div>
+    </div>
+    <p class="help" id="help"></p>
+  </div>
+</details>
+
+<div class="pad" id="pad" hidden>
+  <button class="up" data-k="f" aria-label="Walk forward">▲</button>
+  <button class="left" data-k="l" aria-label="Step left">◀</button>
+  <button class="down" data-k="b" aria-label="Walk back">▼</button>
+  <button class="right" data-k="r" aria-label="Step right">▶</button>
+</div>
+
+<div class="readout">
+  <span class="tag" id="rTag">Camera</span>
+  <code id="rCam">–</code>
+  <button id="copy">Copy view</button>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const D = {"W":5.8,"L":11.3,"H":2.7,"smart_board":[2.05,3.75],"entry_door":[0.05,1.05],"windows":[[1.76,4.15],[5.1,7.6],[8.55,11.3]],"partition":[8.55,11.3],"part_door":[9.5,10.4],"glass":[4.75,6.550000000000001],"pod_centre":[1.7000000000000002,3.0],"nook_centre":[1.6,6.97],"server_room":{"w":5.4,"ext":2.4,"door":[8.65,9.55],"server":[2.4,1.6]},"walk":[[4.45,0.0],[3.25,0.0],[3.25,1.15],[3.25,8.0],[2.05,8.0],[2.05,8.5],[1.2,8.5],[0.0,8.5],[0.0,8.55],[-1.2,8.55],[-5.4,8.55],[-5.4,9.75],[-1.2,9.75],[-1.2,10.5],[0.0,10.5],[1.2,10.5],[1.2,9.7],[3.2,9.7],[3.2,9.5],[3.25,9.5],[4.449999999999999,9.5],[4.45,9.5],[4.45,1.15],[5.8,1.15],[5.8,0.0],[4.45,0.0]],"items":[{"name":"Table T1","kind":"table","shape":"r","g":[0.9,2.2,1.6,0.8]},{"name":"Table T2","kind":"table","shape":"r","g":[0.9,3.0,1.6,0.8]},{"name":"Chair P1","kind":"chair","shape":"r","g":[0.9750000000000001,1.4750000000000003,0.65,0.65]},{"name":"Chair P2","kind":"chair","shape":"r","g":[0.9750000000000001,3.875,0.65,0.65]},{"name":"Chair P3","kind":"chair","shape":"r","g":[1.7750000000000001,1.4750000000000003,0.65,0.65]},{"name":"Chair P4","kind":"chair","shape":"r","g":[1.7750000000000001,3.875,0.65,0.65]},{"name":"Chair P5","kind":"chair","shape":"r","g":[0.175,2.275,0.65,0.65]},{"name":"Chair P6","kind":"chair","shape":"r","g":[2.5749999999999997,2.275,0.65,0.65]},{"name":"Chair P7","kind":"chair","shape":"r","g":[0.175,3.075,0.65,0.65]},{"name":"Chair P8","kind":"chair","shape":"r","g":[2.5749999999999997,3.075,0.65,0.65]},{"name":"Window counter","kind":"counter","shape":"r","g":[5.2,1.8,0.6,6.4]},{"name":"Chair C1","kind":"chair","shape":"r","g":[4.475,1.8750000000000002,0.65,0.65]},{"name":"Chair C2","kind":"chair","shape":"r","g":[4.475,2.675,0.65,0.65]},{"name":"Chair C3","kind":"chair","shape":"r","g":[4.475,3.475,0.65,0.65]},{"name":"Chair C4","kind":"chair","shape":"r","g":[4.475,4.275,0.65,0.65]},{"name":"Chair C5","kind":"chair","shape":"r","g":[4.475,5.075,0.65,0.65]},{"name":"Chair C6","kind":"chair","shape":"r","g":[4.475,5.875,0.65,0.65]},{"name":"Chair C7","kind":"chair","shape":"r","g":[4.475,6.675000000000001,0.65,0.65]},{"name":"Chair C8","kind":"chair","shape":"r","g":[4.475,7.4750000000000005,0.65,0.65]},{"name":"Round coffee table","kind":"ctable","shape":"c","g":[1.6,6.97,0.35]},{"name":"Armchair A1","kind":"armchair","shape":"r","g":[0.09999999999999998,6.569999999999999,0.8,0.8]},{"name":"Armchair A2","kind":"armchair","shape":"r","g":[1.2000000000000002,5.469999999999999,0.8,0.8]},{"name":"Armchair A3","kind":"armchair","shape":"r","g":[2.3000000000000003,6.569999999999999,0.8,0.8]},{"name":"Armchair A4","kind":"armchair","shape":"r","g":[1.2000000000000002,7.67,0.8,0.8]},{"name":"Sofa leg (wall)","kind":"sofa","shape":"r","g":[2.6,10.4,3.1999999999999997,0.9]},{"name":"Sofa leg (window)","kind":"sofa","shape":"r","g":[4.8999999999999995,8.7,0.9,1.700000000000001]},{"name":"Coffee table L","kind":"ctable","shape":"r","g":[3.2,9.5,1.3,0.5]},{"name":"Bean bag B1","kind":"beanbag","shape":"c","g":[0.6,0.8,0.425]},{"name":"Bean bag B2","kind":"beanbag","shape":"c","g":[1.5,0.8,0.425]},{"name":"Bean bag B3","kind":"beanbag","shape":"c","g":[1.9,10.85,0.425]}]};
+// Plan coordinates (metres): plan x -> world X, plan y -> world Z, height -> world Y.
+const H = D.H, T = 0.15;
+
+// ---------- renderer / scene ----------
+const stage = document.getElementById("stage");
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+} catch (e) { document.getElementById("err").hidden = false; throw e; }
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("#e6e6e4");
+const camera = new THREE.PerspectiveCamera(55, 1, 0.05, 200);
+
+// ---------- materials ----------
+const M = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.85, metalness: 0, ...o });
+const mat = {
+  wall: M("#f5f4f1", { roughness: 0.95 }),
+  wallEdge: M("#ffffff", { roughness: 0.95 }),
+  floor: M("#ffffff", { roughness: 0.75 }),
+  floorSrv: M("#c3c6c9", { roughness: 0.7 }),
+  ceil: M("#fbfbfa", { roughness: 1, side: THREE.DoubleSide, emissive: "#ffffff", emissiveIntensity: 0.45 }),
+  top: M("#fafafa", { roughness: 0.45 }),
+  metal: M("#262626", { roughness: 0.4, metalness: 0.6 }),
+  chair: M("#151515", { roughness: 0.75 }),
+  mesh: M("#1d1d1d", { roughness: 0.9 }),
+  sofa: M("#3b3b3b", { roughness: 0.95 }),
+  sofaCush: M("#454545", { roughness: 0.95 }),
+  arm: M("#cfcfcd", { roughness: 0.95 }),
+  armCush: M("#dadad8", { roughness: 0.95 }),
+  bean: M("#d40a05", { roughness: 0.9 }),
+  door: M("#2f2f2f", { roughness: 0.6 }),
+  frame: M("#e8e8e8", { roughness: 0.5, metalness: 0.2 }),
+  glass: new THREE.MeshPhysicalMaterial({ color: "#cfe3ee", roughness: 0.05, metalness: 0, transmission: 0, transparent: true, opacity: 0.22, depthWrite: false }),
+  board: new THREE.MeshPhysicalMaterial({ color: "#f4fbfb", roughness: 0.1, transparent: true, opacity: 0.55, depthWrite: false }),
+  alu: M("#9a9a9a", { roughness: 0.35, metalness: 0.7 }),
+  bezel: M("#0c0c0c", { roughness: 0.4 }),
+  rack: M("#101010", { roughness: 0.5, metalness: 0.3 }),
+  ledG: new THREE.MeshBasicMaterial({ color: "#34d399" }),
+  ledR: new THREE.MeshBasicMaterial({ color: "#E10600" }),
+  walk: new THREE.MeshBasicMaterial({ color: "#E10600", transparent: true, opacity: 0.16, depthWrite: false }),
+  redAccent: M("#E10600", { roughness: 0.6 }),
+};
+
+// ---------- helpers ----------
+const shadowCasters = [];
+function box(x0, x1, y0, y1, z0, z1, m, parent = scene, cast = true) {
+  const g = new THREE.BoxGeometry(Math.abs(x1 - x0), Math.abs(y1 - y0), Math.abs(z1 - z0));
+  const mesh = new THREE.Mesh(g, m);
+  mesh.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+  mesh.castShadow = cast; mesh.receiveShadow = true;
+  parent.add(mesh); if (cast) shadowCasters.push(mesh);
+  return mesh;
+}
+// local box inside a group: centre (x,y,z) size (w,h,d)
+function lbox(group, x, y, z, w, h, d, m) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
+  mesh.position.set(x, y, z); mesh.castShadow = true; mesh.receiveShadow = true;
+  group.add(mesh); return mesh;
+}
+function cyl(group, x, y, z, r, h, m, seg = 24) {
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), m);
+  mesh.position.set(x, y, z); mesh.castShadow = true; mesh.receiveShadow = true;
+  group.add(mesh); return mesh;
+}
+// wall running along Z (x0..x1 thickness) with openings [{a,b,lo,hi}] measured on Z
+function wallZ(x0, x1, z0, z1, openings = [], P = scene, m = mat.wall) {
+  const ops = [...openings].sort((p, q) => p.a - q.a);
+  let cur = z0;
+  for (const o of ops) {
+    if (o.a > cur) box(x0, x1, 0, H, cur, o.a, m, P);
+    if (o.lo > 0) box(x0, x1, 0, o.lo, o.a, o.b, m, P);
+    if (o.hi < H) box(x0, x1, o.hi, H, o.a, o.b, m, P);
+    cur = o.b;
+  }
+  if (cur < z1) box(x0, x1, 0, H, cur, z1, m, P);
+}
+function wallX(x0, x1, z0, z1, openings = [], P = scene, m = mat.wall) {
+  const ops = [...openings].sort((p, q) => p.a - q.a);
+  let cur = x0;
+  for (const o of ops) {
+    if (o.a > cur) box(cur, o.a, 0, H, z0, z1, m, P);
+    if (o.lo > 0) box(o.a, o.b, 0, o.lo, z0, z1, m, P);
+    if (o.hi < H) box(o.a, o.b, o.hi, H, z0, z1, m, P);
+    cur = o.b;
+  }
+  if (cur < x1) box(cur, x1, 0, H, z0, z1, m, P);
+}
+// a closed door leaf in a wall running along Z, centred in wall thickness
+function doorZ(xc, a, b, handleSide, P = scene) {
+  const g = new THREE.Group();
+  box(xc - 0.025, xc + 0.025, 0, 2.08, a + 0.01, b - 0.01, mat.door, g);
+  // frame
+  box(xc - 0.09, xc + 0.09, 2.08, 2.14, a - 0.03, b + 0.03, mat.frame, g);
+  box(xc - 0.09, xc + 0.09, 0, 2.14, a - 0.03, a, mat.frame, g);
+  box(xc - 0.09, xc + 0.09, 0, 2.14, b, b + 0.03, mat.frame, g);
+  const hz = handleSide === "a" ? a + 0.08 : b - 0.08;
+  for (const s of [-1, 1]) {
+    const h = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.02, 0.13), mat.alu);
+    h.position.set(xc + s * 0.06, 1.02, hz + (handleSide === "a" ? 0.05 : -0.05)); g.add(h);
+  }
+  P.add(g);
+}
+
+// ---------- floors ----------
+{ // grey carpet tiles, 50 cm, laid quarter-turn; 512 px = 1 m
+  const N = 512, c = document.createElement("canvas"); c.width = c.height = N; const x = c.getContext("2d");
+  const img = x.createImageData(N, N); let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let py = 0; py < N; py++) for (let px = 0; px < N; px++) {
+    const tile = ((px >> 8) + (py >> 8)) & 1;                       // which of the 4 tiles
+    const stripe = tile ? (px % 4 < 2) : (py % 4 < 2);              // pile direction alternates per tile
+    let v = 128 + (tile ? -1 : 1) + (stripe ? 1.5 : -1.5) + (rnd() - 0.5) * 30;
+    if ((px & 255) === 0 || (py & 255) === 0) v -= 10;               // tile seam
+    const i = (py * N + px) * 4; img.data[i] = v - 2; img.data[i + 1] = v; img.data[i + 2] = v + 4; img.data[i + 3] = 255;
+  }
+  x.putImageData(img, 0, 0);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(D.W, D.L); tex.anisotropy = 8;
+  mat.floor.map = tex; mat.floor.roughness = 1; }
+const floorL = new THREE.Mesh(new THREE.PlaneGeometry(D.W, D.L), mat.floor);
+floorL.rotation.x = -Math.PI / 2; floorL.position.set(D.W / 2, 0, D.L / 2); floorL.receiveShadow = true; scene.add(floorL);
+const SR = D.server_room, SRZ0 = D.partition[0], SRZ1 = D.L + SR.ext;
+const floorS = new THREE.Mesh(new THREE.PlaneGeometry(SR.w, SRZ1 - SRZ0), mat.floorSrv);
+floorS.rotation.x = -Math.PI / 2; floorS.position.set(-SR.w / 2, 0, (SRZ0 + SRZ1) / 2); floorS.receiveShadow = true; scene.add(floorS);
+// ground outside, so the model sits on something when seen from above
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), M("#dedcd8", { roughness: 1 }));
+ground.rotation.x = -Math.PI / 2; ground.position.set(0, -0.01, 7); ground.receiveShadow = true; scene.add(ground);
+
+// walkway overlay
+const ws = new THREE.Shape(D.walk.map(([x, y]) => new THREE.Vector2(x, y)));
+const walkMesh = new THREE.Mesh(new THREE.ShapeGeometry(ws), mat.walk);
+walkMesh.rotation.x = Math.PI / 2; walkMesh.position.y = 0.004; walkMesh.visible = false; scene.add(walkMesh);
+
+// ---------- walls (one group per wall, so walls facing the camera can drop away) ----------
+const G = {}; for (const k of ["top", "right", "bottom", "left", "partition", "srTop", "srLeft", "srExt", "srBottom"]) { G[k] = new THREE.Group(); scene.add(G[k]); }
+const win = D.windows.map(([a, b]) => ({ a, b, lo: 0.9, hi: 2.4 }));
+wallX(-T, D.W + T, -T, 0, [], G.top);                                          // smart-board wall
+wallZ(D.W, D.W + T, 0, D.L, [{ a: D.entry_door[0], b: D.entry_door[1], lo: 0, hi: 2.1 }, ...win], G.right); // window wall
+wallX(-T, D.W + T, D.L, D.L + T, [], G.bottom);                                // far wall
+wallZ(-T, 0, 0, SRZ0 - T, [], G.left);                                         // left wall (glass board)
+// new partition: black steel frame with red perforated-mesh infill, so the server room shows through
+{
+  const z0 = SRZ0 - T, z1 = D.L, d0 = D.part_door[0], d1 = D.part_door[1], xm = -0.05, TILE = 0.12;
+  const c = document.createElement("canvas"); c.width = c.height = 128; const x = c.getContext("2d");
+  x.fillStyle = "#c40500"; x.fillRect(0, 0, 128, 128);
+  x.globalCompositeOperation = "destination-out";
+  for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { x.beginPath(); x.arc(16 + i * 32, 16 + j * 32, 11, 0, Math.PI * 2); x.fill(); }
+  const base = new THREE.CanvasTexture(c); base.colorSpace = THREE.SRGBColorSpace; base.wrapS = base.wrapT = THREE.RepeatWrapping;
+  function panel(za, zb, ya, yb) {
+    const t = base.clone(); t.needsUpdate = true; t.repeat.set((zb - za) / TILE, (yb - ya) / TILE);
+    const m = new THREE.MeshStandardMaterial({ map: t, transparent: true, depthWrite: false, side: THREE.DoubleSide, roughness: 0.55, metalness: 0.35 });
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(zb - za, yb - ya), m);
+    p.rotation.y = Math.PI / 2; p.position.set(xm, (ya + yb) / 2, (za + zb) / 2); G.partition.add(p);
+  }
+  panel(z0, d0, 0.08, H - 0.05); panel(d1, z1, 0.08, H - 0.05); panel(d0, d1, 2.14, H - 0.05);
+  const post = z => box(-0.08, -0.02, 0, H, z - 0.025, z + 0.025, mat.metal, G.partition);
+  for (const z of [z0 + 0.025, (z0 + d0) / 2, d0 - 0.025, d1 + 0.025, z1 - 0.025]) post(z);
+  box(-0.08, -0.02, H - 0.05, H, z0, z1, mat.metal, G.partition);                 // head rail
+  box(-0.08, -0.02, 0, 0.08, z0, d0, mat.metal, G.partition);                     // base rail
+  box(-0.08, -0.02, 0, 0.08, d1, z1, mat.metal, G.partition);
+  box(-0.08, -0.02, 2.10, 2.14, d0, d1, mat.metal, G.partition);                  // door head
+}
+wallX(-SR.w - T, -0.10, SRZ0 - T, SRZ0, [], G.srTop);
+wallZ(-SR.w - T, -SR.w, SRZ0 - T, SRZ1 + T, [{ a: SR.door[0], b: SR.door[1], lo: 0, hi: 2.1 }], G.srLeft);
+wallZ(-T, 0, D.L + T, SRZ1, [], G.srExt);
+wallX(-SR.w - T, 0, SRZ1, SRZ1 + T, [], G.srBottom);
+// which side of each wall counts as "outside"
+const OUT = {
+  top: c => c.z < -T, right: c => c.x > D.W + T, bottom: c => c.z > D.L + T && c.x > 0,
+  left: c => c.x < -T && c.z < SRZ0, srTop: c => c.z < SRZ0 - T && c.x < 0,
+  srLeft: c => c.x < -SR.w - T, srExt: c => c.x > 0 && c.z > D.L + T, srBottom: c => c.z > SRZ1 + T,
+};
+
+// doors (closed)
+doorZ(D.W + T / 2, D.entry_door[0], D.entry_door[1], "b", G.right);
+doorZ(-0.05, D.part_door[0], D.part_door[1], "a", G.partition);
+doorZ(-SR.w - T / 2, SR.door[0], SR.door[1], "b", G.srLeft);
+
+// windows: glass + mullions + sill
+for (const [a, b] of D.windows) {
+  const gl = new THREE.Mesh(new THREE.BoxGeometry(0.02, 1.5, b - a), mat.glass);
+  gl.position.set(D.W + T / 2, 1.65, (a + b) / 2); G.right.add(gl);
+  const n = Math.max(1, Math.round((b - a) / 1.2));
+  for (let i = 0; i <= n; i++) {
+    const z = a + (b - a) * i / n;
+    box(D.W + 0.04, D.W + 0.11, 0.9, 2.4, z - 0.025, z + 0.025, mat.frame, G.right);
+  }
+  box(D.W - 0.08, D.W + 0.02, 0.88, 0.92, a, b, mat.frame, G.right);
+  box(D.W + 0.04, D.W + 0.11, 2.37, 2.4, a, b, mat.frame, G.right);
+  box(D.W + 0.04, D.W + 0.11, 0.9, 0.93, a, b, mat.frame, G.right);
+}
+
+// ---------- ceiling (shown only when the camera is inside) ----------
+const ceiling = new THREE.Group(); scene.add(ceiling);
+const cl = new THREE.Mesh(new THREE.PlaneGeometry(D.W, D.L), mat.ceil);
+cl.rotation.x = Math.PI / 2; cl.position.set(D.W / 2, H, D.L / 2); ceiling.add(cl);
+const cs = new THREE.Mesh(new THREE.PlaneGeometry(SR.w, SRZ1 - SRZ0), mat.ceil);
+cs.rotation.x = Math.PI / 2; cs.position.set(-SR.w / 2, H, (SRZ0 + SRZ1) / 2); ceiling.add(cs);
+const panelMat = new THREE.MeshBasicMaterial({ color: "#ffffff" });
+for (const z of [2.0, 4.8, 7.6, 10.2]) for (const x of [1.6, 4.2]) {
+  const p = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 1.2), panelMat);
+  p.rotation.x = Math.PI / 2; p.position.set(x, H - 0.005, z); ceiling.add(p);
+}
+
+// ---------- boards ----------
+// smart board on the top wall, 75-inch (about 1.66 x 0.94 m), centre 1.45 m high
+{
+  const [a, b] = D.smart_board, w = b - a, h = w * 9 / 16, yc = 1.45;
+  box(a, b, yc - h / 2 - 0.03, yc + h / 2 + 0.03, 0, 0.06, mat.bezel, G.top);
+  const c = document.createElement("canvas"); c.width = 1024; c.height = 576;
+  const x = c.getContext("2d");
+  x.fillStyle = "#0b0d10"; x.fillRect(0, 0, 1024, 576);
+  x.fillStyle = "#E10600"; x.fillRect(60, 70, 120, 10);
+  x.fillStyle = "#ffffff"; x.font = "700 54px Inter, sans-serif"; x.fillText("Cyber Security", 60, 150);
+  x.fillText("Student Lounge", 60, 215);
+  x.font = "400 26px ui-monospace, monospace"; x.fillStyle = "#9aa3ad";
+  ["$ nmap -sV 10.0.0.0/24", "$ ctf --start round-3", "$ ./audit.sh --report"].forEach((t, i) => x.fillText(t, 60, 320 + i * 44));
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.05, h - 0.05), new THREE.MeshBasicMaterial({ map: tex }));
+  scr.position.set((a + b) / 2, yc, 0.061); G.top.add(scr);
+}
+// glass board on the left wall
+{
+  const [a, b] = D.glass, lo = 0.9, hi = 2.1;
+  const g = new THREE.Mesh(new THREE.BoxGeometry(0.012, hi - lo, b - a), mat.board);
+  g.position.set(0.03, (lo + hi) / 2, (a + b) / 2); G.left.add(g);
+  box(0, 0.025, lo, hi, a - 0.01, b + 0.01, M("#ffffff", { roughness: 0.3 }), G.left, false); // white backing
+  box(0.0, 0.06, lo - 0.04, lo - 0.01, a, b, mat.alu, G.left);                                  // marker tray
+  for (const z of [a + 0.08, b - 0.08]) for (const y of [lo + 0.08, hi - 0.08]) cyl(G.left, 0.05, y, z, 0.012, 0.03, mat.alu, 12).rotation.z = Math.PI / 2;
+  // marker sketch of the OSI model, 1 px = 1 mm
+  const c = document.createElement("canvas"); c.width = 1800; c.height = 1200; const x = c.getContext("2d");
+  const BLUE = "#1f4fd1", GREEN = "#13893a";
+  const layers = [["7", "Application", "HTTP · DNS · SSH"], ["6", "Presentation", "TLS · encoding"], ["5", "Session", "sessions · RPC"],
+                  ["4", "Transport", "TCP / UDP · ports"], ["3", "Network", "IP · ICMP · routing"], ["2", "Data Link", "Ethernet · ARP · MAC"],
+                  ["1", "Physical", "cables · Wi-Fi"]];
+  function draw(font) {
+    x.clearRect(0, 0, 1800, 1200);
+    x.lineJoin = x.lineCap = "round";
+    x.fillStyle = BLUE; x.font = `86px ${font}`; x.fillText("OSI MODEL", 110, 150);
+    x.strokeStyle = BLUE; x.lineWidth = 8; x.beginPath(); x.moveTo(110, 172); x.quadraticCurveTo(330, 186, 560, 168); x.stroke();
+    layers.forEach(([n, name, eg], i) => {
+      const y = 220 + i * 128, h = 112;
+      x.strokeStyle = GREEN; x.lineWidth = 9;
+      x.beginPath(); x.moveTo(112, y + 3); x.lineTo(842, y); x.lineTo(846, y + h); x.lineTo(108, y + h + 2); x.closePath(); x.stroke();
+      x.fillStyle = BLUE; x.font = `60px ${font}`; x.fillText(`${n}  ${name}`, 150, y + 78);
+      x.fillStyle = GREEN; x.font = `48px ${font}`; x.fillText(eg, 940, y + 74);
+      x.strokeStyle = GREEN; x.lineWidth = 6; x.beginPath(); x.moveTo(862, y + 56); x.lineTo(915, y + 56); x.stroke();
+    });
+    x.strokeStyle = BLUE; x.lineWidth = 9; x.beginPath(); x.moveTo(1640, 250); x.lineTo(1640, 1080); x.stroke();
+    x.beginPath(); x.moveTo(1605, 1030); x.lineTo(1640, 1085); x.lineTo(1675, 1030); x.stroke();
+    x.save(); x.translate(1710, 670); x.rotate(Math.PI / 2); x.fillStyle = BLUE; x.font = `46px ${font}`; x.textAlign = "center";
+    x.fillText("encapsulation", 0, 0); x.restore();
+    tex.needsUpdate = true;
+  }
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const ink = new THREE.Mesh(new THREE.PlaneGeometry(b - a, hi - lo), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
+  ink.rotation.y = Math.PI / 2; ink.position.set(0.038, (lo + hi) / 2, (a + b) / 2); G.left.add(ink);
+  const FALLBACK = '"Comic Sans MS", "Segoe Print", cursive';
+  draw(FALLBACK);
+  if (document.fonts && document.fonts.load) {
+    Promise.race([document.fonts.load('60px "Permanent Marker"'), new Promise(r => setTimeout(r, 4000))])
+      .then(() => { if (document.fonts.check('60px "Permanent Marker"')) draw('"Permanent Marker", ' + FALLBACK); }).catch(() => {});
+  }
+}
+
+// ---------- furniture ----------
+const podC = D.pod_centre, nookC = D.nook_centre;
+function faceAngle(cx, cz, tx, tz) { return Math.atan2(tx - cx, tz - cz); }
+
+function officeChair(cx, cz, ang) {
+  const g = new THREE.Group(); g.position.set(cx, 0, cz); g.rotation.y = ang;
+  for (let i = 0; i < 5; i++) {
+    const a = i * 2 * Math.PI / 5;
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 0.30), mat.metal);
+    leg.position.set(Math.sin(a) * 0.15, 0.07, Math.cos(a) * 0.15); leg.rotation.y = a; g.add(leg);
+    const w = new THREE.Mesh(new THREE.SphereGeometry(0.025, 10, 8), mat.chair);
+    w.position.set(Math.sin(a) * 0.30, 0.025, Math.cos(a) * 0.30); g.add(w);
+  }
+  cyl(g, 0, 0.26, 0, 0.022, 0.38, mat.metal, 12);
+  lbox(g, 0, 0.47, 0.02, 0.48, 0.07, 0.46, mat.chair);
+  const back = lbox(g, 0, 0.78, -0.23, 0.46, 0.5, 0.04, mat.mesh);
+  back.rotation.x = -0.08;
+  lbox(g, 0, 0.55, -0.22, 0.05, 0.16, 0.03, mat.metal);
+  scene.add(g);
+}
+function armchair(x, z, w, d, ang) {
+  const g = new THREE.Group(); g.position.set(x + w / 2, 0, z + d / 2); g.rotation.y = ang;
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) cyl(g, sx * 0.33, 0.04, sz * 0.33, 0.02, 0.08, mat.metal, 10);
+  lbox(g, 0, 0.2, 0, 0.8, 0.24, 0.8, mat.arm);
+  lbox(g, 0, 0.38, 0.06, 0.56, 0.12, 0.64, mat.armCush);
+  lbox(g, 0, 0.56, -0.31, 0.8, 0.48, 0.18, mat.arm);
+  for (const sx of [-1, 1]) lbox(g, sx * 0.34, 0.45, 0, 0.12, 0.26, 0.8, mat.arm);
+  scene.add(g);
+}
+function table(x, z, w, d, topY, legW = 0.04) {
+  box(x, x + w, topY - 0.03, topY, z, z + d, mat.top);
+  const i = 0.05;
+  for (const [lx, lz] of [[x + i, z + i], [x + w - i, z + i], [x + i, z + d - i], [x + w - i, z + d - i]])
+    box(lx - legW / 2, lx + legW / 2, 0, topY - 0.03, lz - legW / 2, lz + legW / 2, mat.metal);
+}
+function counter(x, z, w, d) {
+  box(x, x + w, 0.72, 0.75, z, z + d, mat.top);
+  const n = Math.round(d / 1.6);
+  for (let i = 0; i <= n; i++) {
+    const zz = Math.min(z + d - 0.015, Math.max(z + 0.015, z + d * i / n));
+    box(x + 0.05, x + w - 0.02, 0, 0.72, zz - 0.015, zz + 0.015, mat.top);
+  }
+  box(x + w - 0.05, x + w - 0.02, 0.1, 0.72, z, z + d, mat.top);                   // modesty panel
+}
+// sofa piece: footprint, which side the back is on, which end gets an arm
+function sofaPiece(x0, x1, z0, z1, backSide, armEnd) {
+  box(x0, x1, 0.06, 0.28, z0, z1, mat.sofa);
+  for (const [lx, lz] of [[x0 + 0.05, z0 + 0.05], [x1 - 0.05, z0 + 0.05], [x0 + 0.05, z1 - 0.05], [x1 - 0.05, z1 - 0.05]])
+    box(lx - 0.02, lx + 0.02, 0, 0.06, lz - 0.02, lz + 0.02, mat.metal);
+  const BD = 0.22;
+  let bx0 = x0, bx1 = x1, bz0 = z0, bz1 = z1;
+  if (backSide === "+z") bz0 = z1 - BD; else bx0 = x1 - BD;
+  box(bx0, bx1, 0.28, 0.8, bz0, bz1, mat.sofa);
+  // seat cushions, split about every 0.75 m along the run
+  let sx0 = x0, sx1 = x1, sz0 = z0, sz1 = z1;
+  if (backSide === "+z") sz1 = z1 - BD; else sx1 = x1 - BD;
+  if (armEnd === "-x") sx0 += 0.16; if (armEnd === "-z") sz0 += 0.16;
+  const along = backSide === "+z" ? sx1 - sx0 : sz1 - sz0;
+  const n = Math.max(1, Math.round(along / 0.75)), gap = 0.012;
+  for (let i = 0; i < n; i++) {
+    if (backSide === "+z") box(sx0 + along * i / n + gap, sx0 + along * (i + 1) / n - gap, 0.28, 0.42, sz0 + 0.02, sz1, mat.sofaCush);
+    else box(sx0 + 0.02, sx1, 0.28, 0.42, sz0 + along * i / n + gap, sz0 + along * (i + 1) / n - gap, mat.sofaCush);
+  }
+  if (armEnd === "-x") box(x0, x0 + 0.16, 0.28, 0.6, z0, z1, mat.sofa);
+  if (armEnd === "-z") box(x0, x1, 0.28, 0.6, z0, z0 + 0.16, mat.sofa);
+}
+
+for (const it of D.items) {
+  const g = it.g;
+  if (it.kind === "table") table(g[0], g[1], g[2], g[3], 0.75);
+  else if (it.kind === "counter") counter(g[0], g[1], g[2], g[3]);
+  else if (it.kind === "chair") {
+    const cx = g[0] + g[2] / 2, cz = g[1] + g[3] / 2;
+    const ang = it.name.startsWith("Chair C") ? Math.PI / 2 : faceAngle(cx, cz, podC[0], podC[1]);
+    officeChair(cx, cz, ang);
+  }
+  else if (it.kind === "armchair") {
+    const cx = g[0] + g[2] / 2, cz = g[1] + g[3] / 2;
+    armchair(g[0], g[1], g[2], g[3], faceAngle(cx, cz, nookC[0], nookC[1]));
+  }
+  else if (it.kind === "ctable" && it.shape === "c") {
+    const gr = new THREE.Group(); gr.position.set(g[0], 0, g[1]);
+    cyl(gr, 0, 0.415, 0, g[2], 0.03, mat.top, 40);
+    cyl(gr, 0, 0.2, 0, 0.035, 0.4, mat.metal, 12);
+    cyl(gr, 0, 0.01, 0, 0.2, 0.02, mat.metal, 30);
+    scene.add(gr);
+  }
+  else if (it.kind === "ctable") table(g[0], g[1], g[2], g[3], 0.43, 0.035);
+  else if (it.kind === "beanbag") {
+    const b = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 20), mat.bean);
+    b.scale.set(g[2], 0.32, g[2] * 0.96); b.position.set(g[0], 0.3, g[1]);
+    b.castShadow = true; b.receiveShadow = true; scene.add(b); shadowCasters.push(b);
+  }
+  else if (it.kind === "sofa") {
+    const [x, z, w, d] = g;
+    if (it.name.includes("wall")) sofaPiece(x, x + w, z, z + d, "+z", "-x");
+    else sofaPiece(x, x + w, z, z + d + 0.0, "+x", "-z");
+  }
+}
+
+// back cushion in the sofa's inside corner
+{ const sw = D.items.find(i => i.name.includes("window")).g;
+  box(D.W - 0.22, D.W, 0.28, 0.8, sw[1] + sw[3], D.L - 0.22, mat.sofa); }
+
+// ---------- server room ----------
+{
+  const [sw, sd] = SR.server, cx = -SR.w / 2, cz = D.L + SR.ext / 2;
+  const x0 = cx - sw / 2, x1 = cx + sw / 2, z0 = cz - sd / 2, z1 = cz + sd / 2;
+  const n = 3, rw = sw / n;
+  for (let i = 0; i < n; i++) {
+    const a = x0 + i * rw;
+    box(a + 0.01, a + rw - 0.01, 0, 2.0, z0, z1, mat.rack);
+    for (let k = 0; k < 9; k++) {                                                 // device lights on the front
+      const y = 0.35 + k * 0.17;
+      const led = new THREE.Mesh(new THREE.BoxGeometry(rw * 0.55, 0.012, 0.004), k % 4 === 0 ? mat.ledR : mat.ledG);
+      led.position.set(a + rw / 2, y, z0 - 0.003); scene.add(led);
+    }
+  }
+}
+
+// ---------- biometric readers ----------
+function reader(x, z, nx, P) {
+  box(x, x + nx * 0.03, 1.12, 1.28, z - 0.04, z + 0.04, mat.bezel, P, false);
+  const l = new THREE.Mesh(new THREE.BoxGeometry(0.004, 0.02, 0.04), mat.ledR);
+  l.position.set(x + nx * 0.032, 1.25, z); P.add(l);
+  const pad = new THREE.Mesh(new THREE.BoxGeometry(0.004, 0.05, 0.045), M("#2c2c2c", { roughness: 0.3 }));
+  pad.position.set(x + nx * 0.032, 1.17, z); P.add(pad);
+}
+reader(D.W, D.entry_door[1] + 0.12, -1, G.right);
+reader(-SR.w, SR.door[1] + 0.12, 1, G.srLeft);
+
+// ---------- lights ----------
+scene.add(new THREE.HemisphereLight("#ffffff", "#b9b0a2", 1.0));
+scene.add(new THREE.AmbientLight("#ffffff", 0.25));
+const sun = new THREE.DirectionalLight("#fff1dc", 2.8);
+sun.position.set(16, 11, 3); sun.target.position.set(1, 0, 7); scene.add(sun.target);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -11, right: 11, top: 11, bottom: -11, near: 1, far: 45 });
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
+scene.add(sun);
+
+// ---------- views ----------
+const VIEWS = {
+  "Overview":      { p: [10.5, 13.5, 17.5], t: [0.2, 0, 6.8] },
+  "Top-down":      { p: [0.2, 21, 6.95],    t: [0.2, 0, 6.9] },
+  "From entry":    { p: [5.2, 1.6, 0.5],    t: [2.4, 1.0, 6.0] },
+  "Collab pod":    { p: [4.3, 1.75, 5.4],   t: [1.7, 0.7, 3.0] },
+  "Study counter": { p: [2.6, 1.6, 9.2],    t: [5.2, 0.8, 4.2] },
+  "Reading nook":  { p: [3.9, 1.6, 4.8],    t: [1.6, 0.6, 7.0] },
+  "Sofa lounge":   { p: [0.9, 1.6, 7.4],    t: [4.4, 0.6, 10.6] },
+  "Smart board":   { p: [2.9, 1.6, 8.4],    t: [2.9, 1.2, 0] },
+  "Server room":   { p: [-0.6, 1.7, 9.0],   t: [-3.2, 0.8, 12.4] },
+  "Glass board":   { p: [3.2, 1.5, 5.65],   t: [0, 1.4, 5.65] },
+  "Partition":     { p: [3.4, 1.6, 7.6],    t: [0, 1.2, 10.2] },
+};
+const viewsEl = document.getElementById("views");
+let activeView = "Overview";
+for (const name of Object.keys(VIEWS)) {
+  const b = document.createElement("button"); b.textContent = name; b.id = "v-" + name.replace(/\W+/g, "-").toLowerCase();
+  b.addEventListener("click", () => goView(name)); viewsEl.appendChild(b);
+}
+function markView() { for (const b of viewsEl.children) b.classList.toggle("on", b.textContent === activeView); }
+
+// ---------- controls ----------
+const orbit = new OrbitControls(camera, renderer.domElement);
+orbit.enableDamping = true; orbit.dampingFactor = 0.08;
+orbit.maxPolarAngle = Math.PI * 0.495; orbit.minDistance = 0.3; orbit.maxDistance = 40;
+orbit.addEventListener("start", () => { activeView = null; markView(); });
+
+let mode = "orbit";
+const walk = { yaw: 0, pitch: 0, keys: new Set(), drag: null };
+const EYE = 1.6;
+const inside = (x, z) =>
+  (x > 0.25 && x < D.W - 0.25 && z > 0.25 && z < D.L - 0.25) ||
+  (x > -SR.w + 0.25 && x < -0.25 && z > SRZ0 + 0.25 && z < SRZ1 - 0.25) ||
+  (x >= -0.4 && x <= 0.4 && z > D.part_door[0] + 0.15 && z < D.part_door[1] - 0.15);
+
+function goView(name) {
+  const v = VIEWS[name]; activeView = name; markView();
+  if (mode === "walk" && v.p[1] < 2.6 && inside(v.p[0], v.p[2])) {
+    camera.position.set(v.p[0], EYE, v.p[2]);
+    const dx = v.t[0] - v.p[0], dy = v.t[1] - EYE, dz = v.t[2] - v.p[2];
+    walk.yaw = Math.atan2(-dx, -dz); walk.pitch = Math.atan2(dy, Math.hypot(dx, dz));
+    applyWalk(); return;
+  }
+  if (mode === "walk") setMode("orbit");
+  camera.position.set(...v.p); orbit.target.set(...v.t); orbit.update();
+}
+function applyWalk() {
+  camera.rotation.order = "YXZ";
+  camera.rotation.set(walk.pitch, walk.yaw, 0);
+}
+function setMode(m) {
+  mode = m;
+  document.getElementById("mOrbit").setAttribute("aria-pressed", m === "orbit");
+  document.getElementById("mWalk").setAttribute("aria-pressed", m === "walk");
+  document.getElementById("pad").hidden = m !== "walk";
+  orbit.enabled = m === "orbit";
+  const help = document.getElementById("help");
+  if (m === "walk") {
+    help.innerHTML = "<b>Drag</b> to look around. <b>W A S D</b> or arrow keys to walk, or use the pad. Walls stop you; you can walk through the partition door.";
+    let x = camera.position.x, z = camera.position.z;
+    if (!inside(x, z)) { x = 5.2; z = 0.6; }
+    const t = orbit.target, dx = t.x - x, dz = t.z - z;
+    camera.position.set(x, EYE, z);
+    walk.yaw = (Math.hypot(dx, dz) > 0.1) ? Math.atan2(-dx, -dz) : Math.PI * 0.85; walk.pitch = -0.05;
+    if (!inside(5.2, 0.6) || camera.position.distanceTo(new THREE.Vector3(5.2, EYE, 0.6)) > 30) {}
+    applyWalk();
+  } else {
+    help.innerHTML = "<b>Drag</b> to rotate, <b>scroll</b> or pinch to zoom, <b>right-drag</b> or two fingers to pan. Pick a view to jump to it.";
+    const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+    orbit.target.copy(camera.position).addScaledVector(dir, 3); orbit.target.y = Math.max(0.3, orbit.target.y);
+    orbit.update();
+  }
+}
+document.getElementById("mOrbit").addEventListener("click", () => setMode("orbit"));
+document.getElementById("mWalk").addEventListener("click", () => setMode("walk"));
+
+const cv = renderer.domElement;
+cv.addEventListener("pointerdown", e => { if (mode !== "walk") return; walk.drag = { x: e.clientX, y: e.clientY }; cv.setPointerCapture(e.pointerId); activeView = null; markView(); });
+cv.addEventListener("pointermove", e => {
+  if (mode !== "walk" || !walk.drag) return;
+  walk.yaw -= (e.clientX - walk.drag.x) * 0.0045;
+  walk.pitch = Math.max(-1.2, Math.min(1.2, walk.pitch - (e.clientY - walk.drag.y) * 0.0045));
+  walk.drag = { x: e.clientX, y: e.clientY }; applyWalk();
+});
+cv.addEventListener("pointerup", () => walk.drag = null);
+const keyMap = { KeyW: "f", ArrowUp: "f", KeyS: "b", ArrowDown: "b", KeyA: "l", ArrowLeft: "l", KeyD: "r", ArrowRight: "r" };
+addEventListener("keydown", e => { if (mode === "walk" && keyMap[e.code]) { walk.keys.add(keyMap[e.code]); e.preventDefault(); } });
+addEventListener("keyup", e => { if (keyMap[e.code]) walk.keys.delete(keyMap[e.code]); });
+for (const b of document.querySelectorAll(".pad button")) {
+  b.addEventListener("pointerdown", e => { walk.keys.add(b.dataset.k); b.setPointerCapture(e.pointerId); });
+  for (const ev of ["pointerup", "pointercancel", "pointerleave"]) b.addEventListener(ev, () => walk.keys.delete(b.dataset.k));
+}
+
+// ---------- toggles ----------
+const tWalk = document.getElementById("tWalk"), tCeil = document.getElementById("tCeil"), tShadow = document.getElementById("tShadow");
+tWalk.addEventListener("change", () => walkMesh.visible = tWalk.checked);
+tShadow.addEventListener("change", () => { renderer.shadowMap.enabled = tShadow.checked; scene.traverse(o => { if (o.material) o.material.needsUpdate = true; }); });
+
+// ---------- read-out ----------
+const rCam = document.getElementById("rCam");
+const f = v => v.toFixed(2);
+function viewString() {
+  const p = camera.position;
+  if (mode === "orbit") { const t = orbit.target; return `pos ${f(p.x)}, ${f(p.y)}, ${f(p.z)}  →  target ${f(t.x)}, ${f(t.y)}, ${f(t.z)}`; }
+  const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+  const t = p.clone().addScaledVector(dir, 3);
+  return `pos ${f(p.x)}, ${f(p.y)}, ${f(p.z)}  →  target ${f(t.x)}, ${f(t.y)}, ${f(t.z)}`;
+}
+document.getElementById("copy").addEventListener("click", async e => {
+  const s = (activeView ? activeView + ": " : "") + viewString();
+  const btn = e.currentTarget;
+  try { await navigator.clipboard.writeText(s); btn.textContent = "Copied"; }
+  catch { const r = document.createRange(); r.selectNodeContents(rCam); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); btn.textContent = "Selected"; }
+  setTimeout(() => btn.textContent = "Copy view", 1400);
+});
+
+// ---------- loop ----------
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+addEventListener("resize", resize); resize();
+
+const clock = new THREE.Clock();
+let lastStr = "";
+function tick() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  if (mode === "walk" && walk.keys.size) {
+    const sp = 1.6 * dt, fx = -Math.sin(walk.yaw), fz = -Math.cos(walk.yaw);
+    let dx = 0, dz = 0;
+    if (walk.keys.has("f")) { dx += fx; dz += fz; } if (walk.keys.has("b")) { dx -= fx; dz -= fz; }
+    if (walk.keys.has("l")) { dx += fz; dz -= fx; } if (walk.keys.has("r")) { dx -= fz; dz += fx; }
+    const len = Math.hypot(dx, dz) || 1, nx = camera.position.x + dx / len * sp, nz = camera.position.z + dz / len * sp;
+    if (inside(nx, nz)) camera.position.set(nx, EYE, nz);
+    else if (inside(nx, camera.position.z)) camera.position.x = nx;
+    else if (inside(camera.position.x, nz)) camera.position.z = nz;
+  }
+  if (mode === "orbit") orbit.update();
+  const p = camera.position;
+  ceiling.visible = tCeil.checked && p.y < H - 0.05 && inside(p.x, p.z);
+  const cut = mode === "orbit" && !inside(p.x, p.z);
+  for (const k in OUT) G[k].visible = !(cut && OUT[k](p));
+  renderer.render(scene, camera);
+  const s = viewString(); if (s !== lastStr) { rCam.textContent = s; lastStr = s; }
+  document.getElementById("rTag").textContent = activeView ? activeView : (mode === "walk" ? "Walking" : "Camera");
+  requestAnimationFrame(tick);
+}
+setMode("orbit");
+goView("Overview");
+tick();
+window.__lounge = { goView, setMode, VIEWS, camera, orbit };
+</script>
+
+</body>
+</html>
